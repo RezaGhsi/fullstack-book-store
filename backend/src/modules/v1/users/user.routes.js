@@ -1,18 +1,16 @@
 const router = require("express").Router();
 
 const controller = require("./user.controller");
-const userValidator = require("./user.validator");
-const validate = require("./../../../core/middleware/validate");
 
-router
-  .route("/")
-  .get(controller.getAll)
-  .post(userValidator(), validate, controller.create);
+const auth = require("./../../../core/middleware/auth");
+const isAdmin = require("./../../../core/middleware/isAdmin");
+
+router.route("/").get(auth, isAdmin, controller.getAll);
 
 router
   .route("/:id")
-  .get(controller.getOne)
-  .delete(controller.deleteOne)
-  .put(controller.updateOne);
+  .get(auth, isAdmin, controller.getOne)
+  .delete(auth, isAdmin, controller.deleteOne)
+  .put(auth, isAdmin, controller.updateOne);
 
 module.exports = router;

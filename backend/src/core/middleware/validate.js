@@ -3,7 +3,6 @@ const { validationResult } = require("express-validator");
 const validate = (req, res, next) => {
   const result = validationResult(req);
 
-  console.log(result);
   if (!result.isEmpty()) {
     const obj = {};
 

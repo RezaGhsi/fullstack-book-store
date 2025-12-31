@@ -1,6 +1,6 @@
-const { body } = require("express-validator");
+const { body, checkExact } = require("express-validator");
 
-const userValidator = () => {
+exports.signUpValidator = () => {
   return [
     body(["name", "lastName"])
       .isString()
@@ -33,7 +33,19 @@ const userValidator = () => {
         throw new Error("confirmPassword is not equal to password !!");
       } else return true;
     }),
+
+    // checkExact(),
   ];
 };
 
-module.exports = userValidator;
+exports.logInValidator = () => {
+  return [
+    body(["identifier", "password"])
+      .exists()
+      .isEmpty()
+      .isString()
+      .withMessage("Wrong identifier Type !!"),
+
+    checkExact(),
+  ];
+};
