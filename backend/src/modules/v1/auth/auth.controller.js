@@ -1,6 +1,8 @@
 const userModel = require("./../users/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { accTokenGen, refTokenGen } = require("../../../core/utils/auth");
+const { MongooseError } = require("mongoose");
 const app = require("express")();
 
 exports.signUp = async (req, res) => {
@@ -23,19 +25,6 @@ exports.signUp = async (req, res) => {
     Reflect.deleteProperty(userObject, "__v");
     Reflect.deleteProperty(userObject, "boughtBooks");
 
-    if (req.body.rememberMe) {
-      const accessToken = jwt.sign(
-        { id: user._id },
-        process.env.JWT_ACCESS_SECRET
-      );
-
-      res.cookie("access_token", `Bearer ${accessToken}`, {
-        maxAge: 3600000 * 24 * 15,
-        httpOnly: true,
-        secure: true,
-      });
-    }
-
     return res.status(201).json({
       success: true,
       message: "New user Created Successfully",
@@ -50,4 +39,111 @@ exports.signUp = async (req, res) => {
   }
 };
 
-exports.logIn = async (req, res) => {};
+exports.logIn = async (req, res) => {
+  const { identifier, password } = req.body;
+  const re = /^[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+$/;
+  const isEmail = identifier.match(re);
+
+  try {
+    const user = isEmail
+      ? await userModel.findOne({ email: identifier })
+      : await userModel.findOne({ username: identifier });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "Wrong (Email | Username) or Password !!",
+      });
+    }
+
+    const isPassword = bcrypt.compareSync(password, user.password);
+    if (!isPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "Wrong (Email | Username) or Password !!",
+      });
+    }
+
+    const accessToken = accTokenGen(identifier);
+    const refreshToken = refTokenGen(identifier);
+
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken,
+    });
+
+    res.cookie("access_token", accessToken, {
+      maxAge: 60000,
+      httpOnly: true,
+      secure: true,
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: true,
+    });
+
+    res.json({ success: true, message: "Logged In Successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(error.status || 500).json({
+      success: false,
+      error: error.message || "Something Went Wrong !!",
+    });
+  }
+};
+
+exports.getAccessToken = async (req, res) => {
+  const refreshToken = req.cookies["refresh_token"];
+  if (!refreshToken) {
+    return res
+      .status(401)
+      .json({ success: false, error: "No Token Provided !!" });
+  }
+
+  try {
+    const user = await userModel.findOne({ refreshToken });
+    if (!user) {
+      return res
+        .status(403)
+        .json({ success: false, error: "No User Found !!" });
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    const newRefreshToken = refTokenGen(user.email);
+    const accessToken = accTokenGen(user.email);
+
+    await userModel.findByIdAndUpdate(user._id, {
+      refreshToken: newRefreshToken,
+    });
+
+    res.cookie("access_token", accessToken, {
+      maxAge: 60000,
+      httpOnly: true,
+      secure: true,
+    });
+
+    res.cookie("refresh_token", newRefreshToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: true,
+    });
+
+    return res.json({ success: true, accessToken });
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ success: false, error: error.message });
+    } else if (error instanceof MongooseError) {
+      console.error(error);
+      return res
+        .status(error.status || 500)
+        .json({ success: false, error: error.message });
+    } else {
+      return res.status(error.status || 500).json({
+        success: false,
+        error: error.message || "Something Went Wrong !!",
+      });
+    }
+  }
+};

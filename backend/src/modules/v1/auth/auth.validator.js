@@ -44,7 +44,6 @@ exports.logInValidator = () => {
   return [
     body(["identifier", "password"])
       .exists()
-      .isEmpty()
       .isString()
       .withMessage("Wrong identifier Type !!"),
 
