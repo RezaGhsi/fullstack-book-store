@@ -35,6 +35,8 @@ exports.signUpValidator = () => {
     }),
 
     // checkExact(),
+
+    body("rememberMe").isBoolean().optional(),
   ];
 };
 
@@ -47,5 +49,7 @@ exports.logInValidator = () => {
       .withMessage("Wrong identifier Type !!"),
 
     checkExact(),
+
+    body("rememberMe").isBoolean().optional(),
   ];
 };

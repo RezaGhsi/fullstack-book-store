@@ -11,7 +11,7 @@ const auth = async (req, res, next) => {
   }
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
     const user = await userModel.findById(payload.id);
     if (!user) {

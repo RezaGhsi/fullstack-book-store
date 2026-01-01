@@ -1,5 +1,7 @@
 const userModel = require("./../users/user.model");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const app = require("express")();
 
 exports.signUp = async (req, res) => {
   try {
@@ -15,15 +17,24 @@ exports.signUp = async (req, res) => {
       });
     }
 
-    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-
-    req.body.password = hashedPassword;
-
     const user = await userModel.create(req.body);
     const userObject = user.toObject();
     Reflect.deleteProperty(userObject, "password");
     Reflect.deleteProperty(userObject, "__v");
     Reflect.deleteProperty(userObject, "boughtBooks");
+
+    if (req.body.rememberMe) {
+      const accessToken = jwt.sign(
+        { id: user._id },
+        process.env.JWT_ACCESS_SECRET
+      );
+
+      res.cookie("access_token", `Bearer ${accessToken}`, {
+        maxAge: 3600000 * 24 * 15,
+        httpOnly: true,
+        secure: true,
+      });
+    }
 
     return res.status(201).json({
       success: true,
