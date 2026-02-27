@@ -2,8 +2,8 @@ const jwt = require("jsonwebtoken");
 const userModel = require("./../../modules/v1/users/user.model");
 
 const auth = async (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  // const token = req.headers.authorization?.split(" ")[1];
+  const token = req.cookies["access_token"];
 
   if (!token) {
     return res.status(403).json({
@@ -15,7 +15,7 @@ const auth = async (req, res, next) => {
   try {
     const accessTokenPayload = jwt.verify(
       token,
-      process.env.ACCESS_TOKEN_SECRET
+      process.env.ACCESS_TOKEN_SECRET,
     );
 
     const user = await userModel.findOne({
@@ -26,7 +26,7 @@ const auth = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(401).json({ success: false, error: "Invalid Token" });
+      return res.status(403).json({ success: false, error: "Invalid Token" });
     }
 
     req.user = user;

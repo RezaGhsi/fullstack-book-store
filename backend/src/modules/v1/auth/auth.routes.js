@@ -8,6 +8,8 @@ const auth = require("./../../../core/middleware/auth");
 
 router.route("/signup").post(signUpValidator(), validate, controller.signUp);
 router.route("/login").post(logInValidator(), validate, controller.logIn);
-router.route("/refreshtoken").get(controller.getAccessToken);
+router.route("/refresh").post(controller.getAccessToken);
+router.route("/me").get(auth, controller.getMe);
+router.route("/logout").post(controller.logOut);
 
 module.exports = router;

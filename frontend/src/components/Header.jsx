@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 const Header = ({ categories, authors }) => {
   return (
-    <div className="flex justify-between items-center h-20 w-[100%] bg-gray-700">
+    <div className="flex justify-between items-center h-20 w-[100%] bg-indigo-900">
       <div className="flex justify-between">
         <Cart />
         <Search />

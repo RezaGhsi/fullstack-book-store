@@ -20,15 +20,18 @@ exports.signUp = async (req, res) => {
     }
 
     const user = await userModel.create(req.body);
-    const userObject = user.toObject();
-    Reflect.deleteProperty(userObject, "password");
-    Reflect.deleteProperty(userObject, "__v");
-    Reflect.deleteProperty(userObject, "boughtBooks");
+    // const userObject = user.toObject();
+    // Reflect.deleteProperty(userObject, "password");
+    // Reflect.deleteProperty(userObject, "__v");
+    // Reflect.deleteProperty(userObject, "boughtBooks");
+
+    const accessToken = accTokenGen(user.email);
 
     return res.status(201).json({
       success: true,
       message: "New user Created Successfully",
-      user: userObject,
+      accessToken,
+      // user: userObject,
     });
   } catch (error) {
     console.error(error);
@@ -75,21 +78,75 @@ exports.logIn = async (req, res) => {
       maxAge: 60000,
       httpOnly: true,
       secure: true,
+      sameSite: "Strict",
     });
 
     res.cookie("refresh_token", refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: true,
+      sameSite: "Strict",
     });
 
-    res.json({ success: true, message: "Logged In Successfully" });
+    res.json({ success: true, message: "Logged In Successfully", accessToken });
   } catch (error) {
     console.error(error);
     return res.status(error.status || 500).json({
       success: false,
       error: error.message || "Something Went Wrong !!",
     });
+  }
+};
+
+exports.logOut = async (req, res) => {
+  try {
+    const refreshToken = req.cookie?.["refresh_token"];
+
+    if (!refreshToken) {
+      res.clearCookie("access_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
+      return res.status(204).end();
+    }
+    await userModel.updateOne(
+      { refreshToken },
+      { $unset: { refreshToken: "" } },
+    );
+
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+
+    return res.status(204);
+  } catch (error) {
+    console.error("Log Out Error: ", error);
+
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+
+    return res.status(204);
   }
 };
 
@@ -122,12 +179,14 @@ exports.getAccessToken = async (req, res) => {
       maxAge: 60000,
       httpOnly: true,
       secure: true,
+      sameSite: "Strict",
     });
 
     res.cookie("refresh_token", newRefreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: true,
+      sameSite: "Strict",
     });
 
     return res.json({ success: true, accessToken });
@@ -146,4 +205,8 @@ exports.getAccessToken = async (req, res) => {
       });
     }
   }
+};
+
+exports.getMe = async (req, res) => {
+  return res.json({ user: req.user });
 };
