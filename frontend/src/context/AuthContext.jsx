@@ -1,57 +1,93 @@
-import { createContext, useState, useEffect } from "react";
-import api from "../api/axios";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
+import {
+  loginService,
+  registerService,
+  logoutService,
+  getMeService,
+} from "./../features/authService";
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLogin, setIsLogin] = useState(false);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  // const [isLogin, setIsLogin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getUser();
+    const checkSession = async () => {
+      try {
+        const user = await getMeService();
+        setUser(user);
+        // setIsLogin(true);
+      } catch (error) {
+        setUser(null);
+        // setIsLogin(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
-  const getUser = async () => {
+  const login = useCallback(async (identifier, password) => {
+    setError(null);
     try {
-      const res = await api.get("/auth/me");
-      setUser(res.data.user);
-      setIsLogin(true);
+      const user = await loginService(identifier, password);
+      setUser(user);
+      return user;
+      // setIsLogin(true);
     } catch (error) {
-      setUser(null);
-      setIsLogin(false);
+      const message = error.response?.data?.message || "Login failed";
+      setError(message);
+      throw error;
+    }
+  }, []);
+
+  const register = useCallback(async (userInfo) => {
+    setError(null);
+    try {
+      const data = await registerService(...userInfo);
+      return data;
+    } catch (error) {
+      const message = error.response?.data?.message || "Register failed";
+      setError(message);
+      throw error;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await logoutService();
     } finally {
-      setIsLoadingUser(false);
+      setUser(null);
     }
+  }, []);
+
+  const value = {
+    user,
+    loading,
+    error,
+    setError,
+    setLoading,
+    login,
+    register,
+    logout,
+    isLogin: !!user,
   };
 
-  const login = async (identifier, password) => {
-    try {
-      await api.post("/auth/login", {
-        identifier,
-        password,
-      });
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
-      setIsLogin(true);
-    } catch (error) {
-      return error.response?.data?.message || "Login failed";
-    }
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isLogin,
-        setIsLogin,
-        isLoadingUser,
-        setIsLoadingUser,
-        login,
-        getUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("userAuth Should be Used Only In AuthProvider");
+  return context;
 };

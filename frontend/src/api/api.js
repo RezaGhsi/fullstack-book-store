@@ -1,17 +1,24 @@
-import api from "./axios";
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error) => {
-  failedQueue.forEach((prom) => {
+  failedQueue.forEach((promise) => {
     if (error) {
-      prom.reject(error);
+      promise.reject(error);
     } else {
-      prom.resolve();
+      promise.resolve();
     }
   });
-
   failedQueue = [];
 };
 
@@ -19,9 +26,11 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (originalRequest.url === "/auth/refresh") {
+
+    if (originalRequest.url.includes("/auth/refresh")) {
       return Promise.reject(error);
     }
+
     if (
       (error.response?.status === 401 || error.response?.status === 403) &&
       !originalRequest._retry
@@ -29,7 +38,9 @@ api.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(() => api(originalRequest));
+        })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -37,10 +48,12 @@ api.interceptors.response.use(
 
       try {
         await api.post("/auth/refresh");
+
         processQueue(null);
         return api(originalRequest);
       } catch (error) {
         processQueue(error);
+
         return Promise.reject(error);
       }
     }

@@ -1,4 +1,3 @@
-import React from "react";
 import Search from "./Search";
 import Cart from "./Cart";
 import UserModal from "./UserModal";

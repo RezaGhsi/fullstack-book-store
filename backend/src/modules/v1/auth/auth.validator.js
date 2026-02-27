@@ -7,7 +7,7 @@ exports.signUpValidator = () => {
       .withMessage("name or lastName Type is Not valid !!")
       .isLength({ min: 3, max: 20 })
       .withMessage(
-        "name and lastName has to be minimum 3 and maximum 20 characters"
+        "name and lastName has to be minimum 3 and maximum 20 characters",
       ),
 
     body("username")

@@ -1,12 +1,10 @@
-import React from "react";
-import { useState, useContext } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 const UserModal = () => {
-  const { user, isLogin } = useContext(AuthContext);
+  const { user, isLogin } = useAuth();
 
   return (
     <div className="rounded-full mr-7">

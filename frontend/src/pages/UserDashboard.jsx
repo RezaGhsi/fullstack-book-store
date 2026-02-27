@@ -1,10 +1,10 @@
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 import { FaSpinner } from "react-icons/fa";
 
 const UserDashboard = () => {
-  const { user, isLogin, isLoadingUser } = useContext(AuthContext);
+  const { user, loading, logout } = useAuth();
 
   // if (isLoadingUser)
   //   return (
@@ -16,7 +16,7 @@ const UserDashboard = () => {
   // if (user && isLogin && !isLoadingUser) return <h1>{user.email}</h1>;
   return (
     <div>
-      <h1>{user && isLogin && !isLoadingUser ? user.email : <FaSpinner />}</h1>
+      <h1 className="text-4xl">{user.email}</h1>
     </div>
   );
 };

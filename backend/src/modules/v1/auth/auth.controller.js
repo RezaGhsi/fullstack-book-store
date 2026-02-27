@@ -29,7 +29,7 @@ exports.signUp = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "New user Created Successfully",
+      message: "User Registered Successfully",
       accessToken,
       // user: userObject,
     });
@@ -88,7 +88,12 @@ exports.logIn = async (req, res) => {
       sameSite: "Strict",
     });
 
-    res.json({ success: true, message: "Logged In Successfully", accessToken });
+    res.json({
+      success: true,
+      message: "Logged In Successfully",
+      user,
+      accessToken,
+    });
   } catch (error) {
     console.error(error);
     return res.status(error.status || 500).json({
