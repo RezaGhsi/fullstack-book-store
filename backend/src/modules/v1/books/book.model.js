@@ -6,6 +6,10 @@ const schema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    descreption: {
+      type: String,
+      required: true,
+    },
     price: {
       type: Number,
       required: true,
@@ -18,12 +22,16 @@ const schema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "Author",
     },
-    category: {
+    publisher: {
       type: mongoose.Types.ObjectId,
+      ref: "Publisher",
+    },
+    categories: {
+      type: [mongoose.Types.ObjectId],
       ref: "Category",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const model = mongoose.model("Book", schema);

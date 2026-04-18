@@ -13,6 +13,30 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.getPage = async (req, res) => {
+  try {
+    const page = req.params.page - 1;
+
+    const allBooks = await model.find().lean();
+
+    const books = [];
+    for (i = 0; i < 10; i++) {
+      const book = allBooks[page * 10 + i];
+      if (!book) {
+        break;
+      }
+      books.push(book);
+    }
+
+    return res.json({ success: true, page: page + 1, books });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Something Went Wrong !!",
+    });
+  }
+};
+
 exports.create = async (req, res) => {
   try {
     const isAlreadyInDb = await model.findOne({ name: req.body.name });
@@ -57,6 +81,35 @@ exports.getOne = async (req, res) => {
 
     return res.json({ success: true, book });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Something Went Wrong !!",
+    });
+  }
+};
+
+exports.getOneByName = async (req, res) => {
+  const { name } = req.params;
+  console.log(name);
+  if (!name) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Book Name is Not Valid !!" });
+  }
+  try {
+    const book = await model.findOne({ name });
+    // .populate("categories")
+    // .populate("author");
+
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Book Not Found !!" });
+    }
+
+    return res.json({ success: true, book });
+  } catch (error) {
+    console.error(error.message);
     return res.status(500).json({
       success: false,
       error: error.message || "Something Went Wrong !!",

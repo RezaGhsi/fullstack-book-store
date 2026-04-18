@@ -35,8 +35,8 @@ const Login = () => {
     // }
   };
   return (
-    <div className="flex flex-col bg-radial-[at_50%_75%] from-sky-100 via-blue-300 to-indigo-700 to-90% justify-center items-center w-[100%] h-dvh">
-      <div className="flex flex-col bg-white justify-center items-center rounded-xl shadow-2xl p-2">
+    <div className="flex flex-col bg-radial-[at_50%_75%] from-indigo-200 via-indigo-300 to-indigo-400 to-90% justify-center items-center w-[100%] h-dvh">
+      <div className="flex flex-col bg-white/50 backdrop-blur-2xl justify-center items-center rounded-xl shadow-2xl p-2">
         {error && (
           <h2
             id="loginError"
@@ -50,11 +50,14 @@ const Login = () => {
           ورود به سایت
         </h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col w-lg p-2">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center w-lg p-2"
+        >
           <input
             name="identifier"
             value={form.identifier}
-            className="mb-8 mx-5 h-14 p-2 outline-0 pr-4 text-right border-gray-400 border-1 rounded-full"
+            className="w-md mb-8 mx-5 h-14 p-2 outline-0 pr-4 text-right border-gray-500 border-1 rounded-full"
             type="text"
             placeholder="ایمیل یا نام کاربری"
             onChange={handleChange}
@@ -62,18 +65,18 @@ const Login = () => {
           <input
             name="password"
             value={form.password}
-            className="mx-5 mb-2 h-14 p-2 outline-0 pr-4 text-right border-gray-400 border-1 rounded-full"
+            className="w-md mx-5 mb-2 h-14 p-2 outline-0 pr-4 text-right border-gray-500 border-1 rounded-full"
             type="password"
             placeholder="رمز عبور"
             onChange={handleChange}
           />
-          <a className="text-right text-sm font-semibold mb-5 pr-10" href="#">
+          <a className="text-sm font-semibold mb-5" href="#">
             رمز عبور خود را فراموش کردید؟
           </a>
           <button
             disabled={loading}
             type="submit"
-            className="pb-2 text-xl text-white font-semibold bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 w-md h-14 rounded-full mt-6 mb-8 cursor-pointer "
+            className="pb-2 text-xl text-white font-semibold bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 w-md h-14 rounded-full mt-6 mb-8 cursor-pointer "
           >
             {loading ? "در حال ورود..." : "ورود"}
           </button>

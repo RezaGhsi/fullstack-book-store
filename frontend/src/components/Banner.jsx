@@ -1,15 +1,15 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Banner = () => {
   return (
-    <div className="">
-      <a href="/">
-        <img
-          src="./img/Banner.png"
-          alt="banner"
-          className="rounded-xl my-8 mb-12"
-        />
-      </a>
+    <div>
+      <img
+        draggable={false}
+        src="/img/Banner.png"
+        alt="banner"
+        className="rounded-xl my-8 mb-12"
+      />
     </div>
   );
 };

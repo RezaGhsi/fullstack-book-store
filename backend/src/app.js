@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const bookRouter = require("./modules/v1/books/book.routes");
 const userRouter = require("./modules/v1/users/user.routes");
 const authRouter = require("./modules/v1/auth/auth.routes");
+const categoryRouter = require("./modules/v1/category/category.routes");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use("/api/book", bookRouter);
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/category", categoryRouter);
 
 app.use((err, req, res, next) => {
   if (!err) return next();

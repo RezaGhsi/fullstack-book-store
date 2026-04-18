@@ -88,6 +88,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("userAuth Should be Used Only In AuthProvider");
+  if (!context) throw new Error("useAuth Should be Used Only In AuthProvider");
   return context;
 };
