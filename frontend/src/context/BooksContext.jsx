@@ -19,6 +19,7 @@ const BooksContext = createContext(null);
 
 export const BooksProvider = ({ children }) => {
   const [latestBooks, setLatestBooks] = useState(null);
+  const [searchBooks, setSearchBooks] = useState(null);
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,6 +54,7 @@ export const BooksProvider = ({ children }) => {
 
   const getLatestBooksPage = useCallback(async (pageNumber) => {
     try {
+      setLoading(true);
       const { books } = await getBooksPageService(pageNumber);
       setLatestBooks(books);
     } catch (error) {
@@ -62,13 +64,28 @@ export const BooksProvider = ({ children }) => {
     }
   }, []);
 
+  const getSearchBooks = useCallback(async (searchTerm) => {
+    try {
+      searchTerm = searchTerm.trim();
+      setLoading(true);
+      const { books } = await searchBooksService(searchTerm);
+      setSearchBooks(books);
+    } catch (error) {
+      setSearchBooks(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const value = {
     latestBooks,
     loading,
     book,
+    searchBooks,
     error,
     getBookByName,
     getLatestBooksPage,
+    getSearchBooks,
   };
 
   return (

@@ -6,7 +6,7 @@ const schema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    descreption: {
+    description: {
       type: String,
       required: true,
     },
@@ -22,10 +22,7 @@ const schema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "Author",
     },
-    publisher: {
-      type: mongoose.Types.ObjectId,
-      ref: "Publisher",
-    },
+    publisher: String,
     categories: {
       type: [mongoose.Types.ObjectId],
       ref: "Category",

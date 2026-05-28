@@ -154,7 +154,10 @@ exports.search = async (req, res) => {
 
   try {
     const books = await model.find({
-      name: { $regex: searchTerm, $options: "i" },
+      $or: [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { description: { $regex: searchTerm, $options: "i" } },
+      ],
     });
 
     return res.json({ success: true, books });
